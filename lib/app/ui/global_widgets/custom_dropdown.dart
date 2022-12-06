@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:price_tracker/app/ui/theme/app_colors.dart';
+import 'package:price_tracker/app/ui/theme/app_sizes.dart';
 
 class CustomDropDown<T> extends StatelessWidget {
   final T? value;
@@ -27,14 +29,14 @@ class CustomDropDown<T> extends StatelessWidget {
       children: <Widget>[
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular( AppSizes.defaultRadius),
             color: backgroundColor,
             border: Border.all(
               width: 1,
-              color: Colors.grey,
+              color: AppColors.txtHeaderColor,
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: AppSizes.defaultPadding),
           child: Theme(
             data: ThemeData(
               splashColor: Colors.transparent,
@@ -47,8 +49,8 @@ class CustomDropDown<T> extends StatelessWidget {
               validator: validator,
               hint: Text(
                 hint,
-                style: const TextStyle(
-                  color: Colors.grey,
+                style: TextStyle(
+                  color: AppColors.txtBodyColor,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -65,9 +67,9 @@ class CustomDropDown<T> extends StatelessWidget {
                     }
                   : null,
               isExpanded: true,
-              icon: const Icon(
+              icon: Icon(
                 Icons.chevron_left,
-                color: Colors.grey,
+                color: AppColors.txtBodyColor,
                 size: 8,
               ),
             ),
@@ -78,9 +80,9 @@ class CustomDropDown<T> extends StatelessWidget {
             padding: const EdgeInsets.only(left: 30, top: 10),
             child: Text(
               errorText!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Colors.red,
+                color: AppColors.dangerColor,
               ),
             ),
           )
