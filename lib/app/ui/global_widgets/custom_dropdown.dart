@@ -68,9 +68,9 @@ class CustomDropDown<T> extends StatelessWidget {
                   : null,
               isExpanded: true,
               icon: Icon(
-                Icons.chevron_left,
+                Icons.chevron_right,
                 color: AppColors.txtBodyColor,
-                size: 8,
+                size: 24,
               ),
             ),
           ),
