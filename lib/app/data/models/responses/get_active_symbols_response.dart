@@ -1,6 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:price_tracker/app/data/models/active_symbol.dart';
 
 part 'get_active_symbols_response.freezed.dart';
 part 'get_active_symbols_response.g.dart';
@@ -8,17 +9,17 @@ part 'get_active_symbols_response.g.dart';
 
 @freezed
 @immutable
-class GetActiveSymbolsActiveSymbolResponse with _$GetActiveSymbolsActiveSymbolResponse {
-  const factory GetActiveSymbolsActiveSymbolResponse({
-    @JsonKey(name: 'active_symbols') @Default([]) String? activeSymbols,
+class GetActiveSymbolsResponse with _$GetActiveSymbolsResponse {
+  const factory GetActiveSymbolsResponse({
+    @JsonKey(name: 'active_symbols') @Default([]) List<ActiveSymbol> activeSymbols,
     @JsonKey(name: 'echo_req') EchoReq? echoReq,
     @JsonKey(name: 'msg_type') String? msgType,
     @JsonKey(name: 'req_id') int? reqId,
-  }) = _GetActiveSymbolsActiveSymbolResponse;
+  }) = _GetActiveSymbolsResponse;
 
-  factory GetActiveSymbolsActiveSymbolResponse.fromJson(Map<String, dynamic> json) => _$GetActiveSymbolsActiveSymbolResponseFromJson(json);
+  factory GetActiveSymbolsResponse.fromJson(Map<String, dynamic> json) => _$GetActiveSymbolsResponseFromJson(json);
 
-  const GetActiveSymbolsActiveSymbolResponse._();
+  const GetActiveSymbolsResponse._();
 }
 
 @freezed
