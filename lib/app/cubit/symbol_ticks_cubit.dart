@@ -8,7 +8,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class SymbolTicksCubit extends Cubit<GetSymbolTicksState> {
   final ApiProvider apiProvider;
   SymbolTicksCubit({required this.apiProvider}) : super(GetSymbolTicksInitialState());
-  late WebSocketChannel channel;
   SymbolTick? lastResponse;
   final markets = <String>[];
 
@@ -30,7 +29,6 @@ class SymbolTicksCubit extends Cubit<GetSymbolTicksState> {
         lastResponse = response.tick;
       }
     } on WebSocketChannelException catch (e) {
-      channel.sink.close();
       emit(GetSymbolTicksErrorState(e: e));
     }
   }
