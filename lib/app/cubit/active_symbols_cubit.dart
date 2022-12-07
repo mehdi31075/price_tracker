@@ -49,7 +49,11 @@ class ActiveSymbolsCubit extends Cubit<GetActiveSymbolsState> {
     if (response != null) {
       emit(
         GetActiveSymbolsSuccessState(
-          activeSymbols: response!.activeSymbols,
+          activeSymbols: response!.activeSymbols
+              .where(
+                (symbol) => symbol.market == asset.market,
+              )
+              .toList(),
           markets: markets,
           selectedMarket: asset.market,
           selectedAsset: asset,

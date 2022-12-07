@@ -78,25 +78,43 @@ class _SuccessWidget extends StatelessWidget {
                 .map(
                   (market) => DropdownMenuItem<String>(
                     value: market,
-                    child: Text(market),
+                    child: Text(
+                      market,
+                      style: TextStyle(
+                        color: AppColors.txtHeaderColor,
+                      ),
+                    ),
                   ),
                 )
                 .toList(),
             onChanged: (market) => onSelectMarket(market),
           ),
           SizedBox(height: AppSizes.defaultPadding),
-          CustomDropDown<ActiveSymbol>(
-            hint: AppStrings.selectAssetHint,
-            value: activeSymbolsBlocState.selectedAsset,
-            items: activeSymbolsBlocState.activeSymbols
-                .map(
-                  (symbol) => DropdownMenuItem<ActiveSymbol>(
-                    value: symbol,
-                    child: Text(symbol.displayName ?? ''),
-                  ),
-                )
-                .toList(),
-            onChanged: (asset) => onSelectAsset(asset),
+          Opacity(
+            opacity: activeSymbolsBlocState.selectedMarket == null ? 0.3 : 1,
+            child: IgnorePointer(
+              ignoring: activeSymbolsBlocState.selectedMarket == null,
+              child: CustomDropDown<ActiveSymbol>(
+                hint: AppStrings.selectAssetHint,
+                value: activeSymbolsBlocState.selectedAsset,
+                items: activeSymbolsBlocState.activeSymbols.map(
+                  (symbol) {
+                    final isEnabled = symbol.exchangeIsOpen == 1;
+                    return DropdownMenuItem<ActiveSymbol>(
+                      value: symbol,
+                      enabled: isEnabled,
+                      child: Text(
+                        symbol.displayName ?? '',
+                        style: TextStyle(
+                          color: isEnabled ? AppColors.txtHeaderColor : AppColors.hintColor,
+                        ),
+                      ),
+                    );
+                  },
+                ).toList(),
+                onChanged: (asset) => onSelectAsset(asset),
+              ),
+            ),
           ),
           SizedBox(height: AppSizes.defaultPadding),
           Expanded(
@@ -109,7 +127,7 @@ class _SuccessWidget extends StatelessWidget {
                     final state = symbolTicksBlocState as GetSymbolTicksSuccessState;
                     final tick = state.symbolTick;
                     return Text(
-                      tick?.quote.toString() ?? '',
+                      '${AppStrings.price}: ${tick?.quote.toString() ?? ''}',
                       style: TextStyle(
                         fontSize: 24,
                         color: state.diff > 0

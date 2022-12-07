@@ -37,7 +37,7 @@ class SymbolTicksCubit extends Cubit<GetSymbolTicksState> {
     }
   }
 
-  Future forgetTick({
+  forgetTick({
     required ForgetTickRequest request,
   }) async {
     try {
