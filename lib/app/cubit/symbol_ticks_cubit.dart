@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:price_tracker/app/data/models/requests/forget_tick_request.dart';
 import 'package:price_tracker/app/data/models/requests/get_symbol_ticks_request.dart';
 import 'package:price_tracker/app/data/models/responses/get_symbol_ticks_response.dart';
 import 'package:price_tracker/app/data/providers/api_provider.dart';
@@ -15,6 +16,9 @@ class SymbolTicksCubit extends Cubit<GetSymbolTicksState> {
     required GetSymbolTicksRequest request,
   }) async {
     emit(GetSymbolTicksLoadingState());
+    if (lastResponse != null) {
+      await forgetTick(request: ForgetTickRequest(forget: lastResponse?.id));
+    }
     try {
       await for (final response in apiProvider.getSymbolTicks(request: request)) {
         emit(
@@ -29,6 +33,15 @@ class SymbolTicksCubit extends Cubit<GetSymbolTicksState> {
       channel.sink.close();
       emit(GetSymbolTicksErrorState(e: e));
     }
+  }
+
+  Future forgetTick({
+    required ForgetTickRequest request,
+  }) async {
+    try {
+      await for (final response in apiProvider.forgetTick(request: request)) {
+      }
+    } on WebSocketChannelException catch (e) {}
   }
 }
 
