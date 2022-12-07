@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:price_tracker/app/data/models/active_symbol.dart';
+import 'package:price_tracker/app/data/models/responses/get_active_symbols_response.dart';
 import 'package:price_tracker/app/data/providers/api_provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -7,10 +8,11 @@ class ActiveSymbolsCubit extends Cubit<GetActiveSymbolsState> {
   final ApiProvider apiProvider;
   ActiveSymbolsCubit({required this.apiProvider}) : super(GetActiveSymbolsInitialState());
   late WebSocketChannel channel;
+  GetActiveSymbolsResponse? response;
+  final markets = <String>[];
 
   getActiveSymbolRequest() async {
     emit(GetActiveSymbolsLoadingState());
-    final markets = <String>[];
     try {
       await for (final response in apiProvider.getActiveSymbols()) {
         for (var symbol in response.activeSymbols) {
@@ -18,11 +20,41 @@ class ActiveSymbolsCubit extends Cubit<GetActiveSymbolsState> {
             markets.add(symbol.market ?? '');
           }
         }
+        this.response = response;
         emit(GetActiveSymbolsSuccessState(activeSymbols: response.activeSymbols, markets: markets));
       }
     } on WebSocketChannelException catch (e) {
       channel.sink.close();
       emit(GetActiveSymbolsErrorState(e: e));
+    }
+  }
+
+  selectMarket(String market) {
+    if (response != null) {
+      emit(
+        GetActiveSymbolsSuccessState(
+          activeSymbols: response!.activeSymbols
+              .where(
+                (symbol) => symbol.market == market,
+              )
+              .toList(),
+          markets: markets,
+          selectedMarket: market,
+        ),
+      );
+    }
+  }
+
+  selectAsset(ActiveSymbol asset) {
+    if (response != null) {
+      emit(
+        GetActiveSymbolsSuccessState(
+          activeSymbols: response!.activeSymbols,
+          markets: markets,
+          selectedMarket: asset.market,
+          selectedAsset: asset,
+        ),
+      );
     }
   }
 }
@@ -37,9 +69,13 @@ class GetActiveSymbolsSuccessState extends GetActiveSymbolsState {
   GetActiveSymbolsSuccessState({
     required this.activeSymbols,
     required this.markets,
+    this.selectedMarket,
+    this.selectedAsset,
   }) : super();
   final List<ActiveSymbol> activeSymbols;
   final List<String> markets;
+  final String? selectedMarket;
+  final ActiveSymbol? selectedAsset;
 }
 
 class GetActiveSymbolsErrorState extends GetActiveSymbolsState {

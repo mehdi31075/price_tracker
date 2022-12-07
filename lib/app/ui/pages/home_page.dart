@@ -15,6 +15,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String? selectedMarket;
+  String? selectedAsset;
+
   @override
   void initState() {
     context.read<ActiveSymbolsCubit>().getActiveSymbolRequest();
@@ -30,12 +33,21 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
       ),
       body: BlocBuilder<ActiveSymbolsCubit, GetActiveSymbolsState>(
-        bloc: context.watch<ActiveSymbolsCubit>(),
+        bloc: context.read<ActiveSymbolsCubit>(),
         builder: (context, blocState) {
+          final bloc = BlocProvider.of<ActiveSymbolsCubit>(context);
           if (blocState is GetActiveSymbolsLoadingState) {
             return const Center(child: LoadingWidget());
           } else if (blocState is GetActiveSymbolsSuccessState) {
-            return _SuccessWidget(successBlocState: blocState);
+            return _SuccessWidget(
+              state: blocState,
+              onSelectMarket: (market) {
+                bloc.selectMarket(market);
+              },
+              onSelectAsset: (asset) {
+                bloc.selectAsset(asset);
+              },
+            );
           }
           return Container();
         },
@@ -46,11 +58,15 @@ class _HomePageState extends State<HomePage> {
 
 class _SuccessWidget extends StatelessWidget {
   const _SuccessWidget({
-    required this.successBlocState,
+    required this.state,
+    required this.onSelectMarket,
+    required this.onSelectAsset,
     Key? key,
   }) : super(key: key);
 
-  final GetActiveSymbolsSuccessState successBlocState;
+  final GetActiveSymbolsSuccessState state;
+  final Function(String) onSelectMarket;
+  final Function(ActiveSymbol) onSelectAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +76,8 @@ class _SuccessWidget extends StatelessWidget {
         children: [
           CustomDropDown<String>(
             hint: AppStrings.selectMarketHint,
-            items: successBlocState.markets
+            value: state.selectedMarket,
+            items: state.markets
                 .map(
                   (market) => DropdownMenuItem<String>(
                     value: market,
@@ -68,12 +85,13 @@ class _SuccessWidget extends StatelessWidget {
                   ),
                 )
                 .toList(),
-            onChanged: (value) {},
+            onChanged: (market) => onSelectMarket(market),
           ),
           SizedBox(height: AppSizes.defaultPadding),
           CustomDropDown<ActiveSymbol>(
             hint: AppStrings.selectAssetHint,
-            items: successBlocState.activeSymbols
+            value: state.selectedAsset,
+            items: state.activeSymbols
                 .map(
                   (symbol) => DropdownMenuItem<ActiveSymbol>(
                     value: symbol,
@@ -81,7 +99,7 @@ class _SuccessWidget extends StatelessWidget {
                   ),
                 )
                 .toList(),
-            onChanged: (value) {},
+            onChanged: (asset) => onSelectAsset(asset),
           ),
         ],
       ),
