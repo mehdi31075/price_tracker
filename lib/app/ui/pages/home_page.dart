@@ -1,28 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:price_tracker/app/cubit/active_symbols_cubit.dart';
+import 'package:price_tracker/app/cubit/symbol_ticks_cubit.dart';
 import 'package:price_tracker/app/data/models/active_symbol.dart';
 import 'package:price_tracker/app/ui/global_widgets/custom_dropdown.dart';
 import 'package:price_tracker/app/ui/global_widgets/loading_widget.dart';
+import 'package:price_tracker/app/ui/theme/app_colors.dart';
 import 'package:price_tracker/app/ui/theme/app_sizes.dart';
 import 'package:price_tracker/app/ui/utils/app_strings.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  String? selectedMarket;
-  String? selectedAsset;
-
-  @override
-  void initState() {
-    context.read<ActiveSymbolsCubit>().getActiveSymbolRequest();
-    super.initState();
-  }
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,24 +20,31 @@ class _HomePageState extends State<HomePage> {
         elevation: 1,
         centerTitle: true,
       ),
-      body: BlocBuilder<ActiveSymbolsCubit, GetActiveSymbolsState>(
-        bloc: context.read<ActiveSymbolsCubit>(),
-        builder: (context, blocState) {
-          final bloc = BlocProvider.of<ActiveSymbolsCubit>(context);
-          if (blocState is GetActiveSymbolsLoadingState) {
-            return const Center(child: LoadingWidget());
-          } else if (blocState is GetActiveSymbolsSuccessState) {
-            return _SuccessWidget(
-              state: blocState,
-              onSelectMarket: (market) {
-                bloc.selectMarket(market);
-              },
-              onSelectAsset: (asset) {
-                bloc.selectAsset(asset);
-              },
-            );
-          }
-          return Container();
+      body: BlocBuilder<SymbolTicksCubit, GetSymbolTicksState>(
+        bloc: context.read<SymbolTicksCubit>(),
+        builder: (contex, symbolTicksBlocState) {
+          return BlocBuilder<ActiveSymbolsCubit, GetActiveSymbolsState>(
+            bloc: context.read<ActiveSymbolsCubit>(),
+            builder: (context, activeSymbolsBlocState) {
+              final activeSymbolsBloc = BlocProvider.of<ActiveSymbolsCubit>(context);
+              final symbolTicksBloc = BlocProvider.of<SymbolTicksCubit>(context);
+              if (activeSymbolsBlocState is GetActiveSymbolsLoadingState) {
+                return const Center(child: LoadingWidget());
+              } else if (activeSymbolsBlocState is GetActiveSymbolsSuccessState) {
+                return _SuccessWidget(
+                  activeSymbolsBlocState: activeSymbolsBlocState,
+                  symbolTicksBlocState: symbolTicksBlocState,
+                  onSelectMarket: (market) {
+                    activeSymbolsBloc.selectMarket(market);
+                  },
+                  onSelectAsset: (asset) {
+                    activeSymbolsBloc.selectAsset(symbolTicksBloc, asset);
+                  },
+                );
+              }
+              return Container();
+            },
+          );
         },
       ),
     );
@@ -58,13 +53,15 @@ class _HomePageState extends State<HomePage> {
 
 class _SuccessWidget extends StatelessWidget {
   const _SuccessWidget({
-    required this.state,
+    required this.activeSymbolsBlocState,
+    required this.symbolTicksBlocState,
     required this.onSelectMarket,
     required this.onSelectAsset,
     Key? key,
   }) : super(key: key);
 
-  final GetActiveSymbolsSuccessState state;
+  final GetActiveSymbolsSuccessState activeSymbolsBlocState;
+  final GetSymbolTicksState symbolTicksBlocState;
   final Function(String) onSelectMarket;
   final Function(ActiveSymbol) onSelectAsset;
 
@@ -76,8 +73,8 @@ class _SuccessWidget extends StatelessWidget {
         children: [
           CustomDropDown<String>(
             hint: AppStrings.selectMarketHint,
-            value: state.selectedMarket,
-            items: state.markets
+            value: activeSymbolsBlocState.selectedMarket,
+            items: activeSymbolsBlocState.markets
                 .map(
                   (market) => DropdownMenuItem<String>(
                     value: market,
@@ -90,8 +87,8 @@ class _SuccessWidget extends StatelessWidget {
           SizedBox(height: AppSizes.defaultPadding),
           CustomDropDown<ActiveSymbol>(
             hint: AppStrings.selectAssetHint,
-            value: state.selectedAsset,
-            items: state.activeSymbols
+            value: activeSymbolsBlocState.selectedAsset,
+            items: activeSymbolsBlocState.activeSymbols
                 .map(
                   (symbol) => DropdownMenuItem<ActiveSymbol>(
                     value: symbol,
@@ -100,6 +97,33 @@ class _SuccessWidget extends StatelessWidget {
                 )
                 .toList(),
             onChanged: (asset) => onSelectAsset(asset),
+          ),
+          SizedBox(height: AppSizes.defaultPadding),
+          Expanded(
+            child: Center(
+              child: Builder(
+                builder: (context) {
+                  if (symbolTicksBlocState is GetSymbolTicksLoadingState) {
+                    return const LoadingWidget();
+                  } else if (symbolTicksBlocState is GetSymbolTicksSuccessState) {
+                    final state = symbolTicksBlocState as GetSymbolTicksSuccessState;
+                    final tick = state.symbolTick;
+                    return Text(
+                      tick?.quote.toString() ?? '',
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: state.diff > 0
+                            ? AppColors.dangerColor
+                            : state.diff < 0
+                                ? AppColors.successColor
+                                : AppColors.txtBodyColor,
+                      ),
+                    );
+                  }
+                  return Container();
+                },
+              ),
+            ),
           ),
         ],
       ),
