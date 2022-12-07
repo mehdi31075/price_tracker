@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:price_tracker/app/cubit/symbol_ticks_cubit.dart';
 import 'package:price_tracker/app/data/models/active_symbol.dart';
+import 'package:price_tracker/app/data/models/requests/get_symbol_ticks_request.dart';
 import 'package:price_tracker/app/data/models/responses/get_active_symbols_response.dart';
 import 'package:price_tracker/app/data/providers/api_provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -45,7 +47,7 @@ class ActiveSymbolsCubit extends Cubit<GetActiveSymbolsState> {
     }
   }
 
-  selectAsset(ActiveSymbol asset) {
+  selectAsset(SymbolTicksCubit bloc, ActiveSymbol asset) {
     if (response != null) {
       emit(
         GetActiveSymbolsSuccessState(
@@ -56,6 +58,11 @@ class ActiveSymbolsCubit extends Cubit<GetActiveSymbolsState> {
         ),
       );
     }
+    bloc.getSymbolTicksRequest(
+      request: GetSymbolTicksRequest(
+        ticks: asset.symbol,
+      ),
+    );
   }
 }
 
