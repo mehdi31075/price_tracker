@@ -7,8 +7,19 @@ import 'package:price_tracker/app/ui/global_widgets/loading_widget.dart';
 import 'package:price_tracker/app/ui/theme/app_sizes.dart';
 import 'package:price_tracker/app/ui/utils/app_strings.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    context.read<ActiveSymbolsCubit>().getActiveSymbolRequest();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +63,12 @@ class _SuccessWidget extends StatelessWidget {
             items: successBlocState.markets
                 .map(
                   (market) => DropdownMenuItem<String>(
+                    value: market,
                     child: Text(market),
                   ),
                 )
                 .toList(),
+            onChanged: (value) {},
           ),
           SizedBox(height: AppSizes.defaultPadding),
           CustomDropDown<ActiveSymbol>(
@@ -63,10 +76,12 @@ class _SuccessWidget extends StatelessWidget {
             items: successBlocState.activeSymbols
                 .map(
                   (symbol) => DropdownMenuItem<ActiveSymbol>(
+                    value: symbol,
                     child: Text(symbol.displayName ?? ''),
                   ),
                 )
                 .toList(),
+            onChanged: (value) {},
           ),
         ],
       ),

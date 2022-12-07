@@ -1,29 +1,27 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:price_tracker/app/data/models/active_symbol.dart';
-import 'package:price_tracker/app/data/repositories/api_repository.dart';
+import 'package:price_tracker/app/data/providers/api_provider.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ActiveSymbolsCubit extends Cubit<GetActiveSymbolsState> {
-  final ApiRepository apiRepository;
-  ActiveSymbolsCubit({required this.apiRepository}) : super(GetActiveSymbolsInitialState());
+  final ApiProvider apiProvider;
+  ActiveSymbolsCubit({required this.apiProvider}) : super(GetActiveSymbolsInitialState());
+  late WebSocketChannel channel;
 
   getActiveSymbolRequest() async {
     emit(GetActiveSymbolsLoadingState());
+    final markets = <String>[];
     try {
-      final markets = <String>[];
-      apiRepository.getActiveSymbols().listen((activeSymbols) {
-        for (var symbol in activeSymbols) {
+      await for (final response in apiProvider.getActiveSymbols()) {
+        for (var symbol in response.activeSymbols) {
           if (!markets.contains(symbol.market)) {
             markets.add(symbol.market ?? '');
           }
         }
-        emit(
-          GetActiveSymbolsSuccessState(
-            activeSymbols: activeSymbols,
-            markets: markets,
-          ),
-        );
-      });
-    } on Exception catch (e) {
+        emit(GetActiveSymbolsSuccessState(activeSymbols: response.activeSymbols, markets: markets));
+      }
+    } on WebSocketChannelException catch (e) {
+      channel.sink.close();
       emit(GetActiveSymbolsErrorState(e: e));
     }
   }
