@@ -16,7 +16,11 @@ class SymbolTicksCubit extends Cubit<GetSymbolTicksState> {
   }) async {
     emit(GetSymbolTicksLoadingState());
     if (lastResponse != null) {
-      await forgetTick(request: ForgetTickRequest(forget: lastResponse?.id));
+      await forgetTick(
+          request: ForgetTickRequest(
+        forget: lastResponse?.id,
+        reqId: 2,
+      ));
     }
     try {
       await for (final response in apiProvider.getSymbolTicks(request: request)) {
@@ -37,8 +41,7 @@ class SymbolTicksCubit extends Cubit<GetSymbolTicksState> {
     required ForgetTickRequest request,
   }) async {
     try {
-      await for (final response in apiProvider.forgetTick(request: request)) {
-      }
+      await for (final response in apiProvider.forgetTick(request: request)) {}
     } on WebSocketChannelException catch (e) {}
   }
 }

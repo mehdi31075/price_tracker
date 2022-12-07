@@ -11,6 +11,7 @@ part 'get_symbol_ticks_response.g.dart';
 class GetSymbolTicksResponse with _$GetSymbolTicksResponse {
   const factory GetSymbolTicksResponse({
     @JsonKey(name: 'tick') SymbolTick? tick,
+    @JsonKey(name: 'subscription') Subscription? subscription,
     @JsonKey(name: 'echo_req') EchoReq? echoReq,
     @JsonKey(name: 'msg_type') String? msgType,
     @JsonKey(name: 'req_id') int? reqId,
@@ -32,6 +33,18 @@ class EchoReq with _$EchoReq {
   factory EchoReq.fromJson(Map<String, dynamic> json) => _$EchoReqFromJson(json);
 
   const EchoReq._();
+}
+
+@freezed
+@immutable
+class Subscription with _$Subscription {
+  const factory Subscription({
+    @JsonKey(name: 'id') String? id,
+  }) = _Subscription;
+
+  factory Subscription.fromJson(Map<String, dynamic> json) => _$SubscriptionFromJson(json);
+
+  const Subscription._();
 }
 
 @freezed

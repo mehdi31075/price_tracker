@@ -12,6 +12,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ApiProvider {
   final appId = 33750;
+  late WebSocketChannel _getSymbolTicksChannel;
+
   Stream<GetActiveSymbolsResponse> getActiveSymbols({GetActiveSymbolsRequest? request}) async* {
     try {
       final channel = WebSocketChannel.connect(
@@ -33,13 +35,13 @@ class ApiProvider {
 
   Stream<GetSymbolTicksResponse> getSymbolTicks({required GetSymbolTicksRequest request}) async* {
     try {
-      final channel = WebSocketChannel.connect(
+      _getSymbolTicksChannel = WebSocketChannel.connect(
         Uri.parse('${Endpoints.baseUrl}?app_id=$appId'),
       );
-      channel.sink.add(
+      _getSymbolTicksChannel.sink.add(
         jsonEncode(request.toJson()),
       );
-      await for (var element in channel.stream) {
+      await for (var element in _getSymbolTicksChannel.stream) {
         yield GetSymbolTicksResponse.fromJson(jsonDecode(element));
       }
     } on Exception {
@@ -49,6 +51,7 @@ class ApiProvider {
 
   Stream<ForgetTickResponse> forgetTick({required ForgetTickRequest request}) async* {
     try {
+      _getSymbolTicksChannel.sink.close();
       final channel = WebSocketChannel.connect(
         Uri.parse('${Endpoints.baseUrl}?app_id=$appId'),
       );
