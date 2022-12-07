@@ -9,7 +9,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class ActiveSymbolsCubit extends Cubit<GetActiveSymbolsState> {
   final ApiProvider apiProvider;
   ActiveSymbolsCubit({required this.apiProvider}) : super(GetActiveSymbolsInitialState());
-  late WebSocketChannel channel;
   GetActiveSymbolsResponse? response;
   final markets = <String>[];
 
@@ -26,7 +25,6 @@ class ActiveSymbolsCubit extends Cubit<GetActiveSymbolsState> {
         emit(GetActiveSymbolsSuccessState(activeSymbols: response.activeSymbols, markets: markets));
       }
     } on WebSocketChannelException catch (e) {
-      channel.sink.close();
       emit(GetActiveSymbolsErrorState(e: e));
     }
   }
